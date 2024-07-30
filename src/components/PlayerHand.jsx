@@ -1,5 +1,6 @@
 import React from "react"
 import { Card, CardContent } from "@/components/ui/card"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 const PlayerHand = ({ player, isCurrentPlayer, onCardClick, onPlayerClick }) => {
   return (
@@ -12,23 +13,30 @@ const PlayerHand = ({ player, isCurrentPlayer, onCardClick, onPlayerClick }) => 
       </div>
       <div className="grid grid-cols-2 gap-2">
         {player.hand.map((card, index) => (
-          <Card
-            key={index}
-            className="h-24 cursor-pointer hover:bg-gray-100 transition-colors"
-            onClick={() => isCurrentPlayer && onCardClick(index)}
-          >
-            <CardContent className="p-2 text-xs">
-              {card.name}
-              <br />
-              Type: {card.type}
-              {card.type === 'character' && (
-                <>
-                  <br />
-                  HP: {card.hp}
-                </>
-              )}
-            </CardContent>
-          </Card>
+          <TooltipProvider key={index}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Card
+                  className="h-32 cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => isCurrentPlayer && onCardClick(index)}
+                >
+                  <CardContent className="p-2 text-xs">
+                    <div className="font-bold mb-1">{card.name}</div>
+                    <div>Type: {card.type}</div>
+                    {card.type === 'character' && (
+                      <div>HP: {card.hp}</div>
+                    )}
+                    {card.ability && (
+                      <div className="text-blue-600">Ability: {card.ability}</div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{card.effect}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         ))}
       </div>
     </div>

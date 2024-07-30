@@ -15,6 +15,7 @@ const Game = () => {
       deck: [...initialDeck],
       hand: [],
       field: [],
+      seductionPower: 0,
     },
     {
       id: 2,
@@ -23,11 +24,13 @@ const Game = () => {
       deck: [...initialDeck],
       hand: [],
       field: [],
+      seductionPower: 0,
     }
   ])
   const [currentPlayerId, setCurrentPlayerId] = useState(1)
   const [gamePhase, setGamePhase] = useState("setup")
   const [selectedCard, setSelectedCard] = useState(null)
+  const [turnCount, setTurnCount] = useState(0)
 
   useEffect(() => {
     if (gamePhase === "setup") {
@@ -41,8 +44,11 @@ const Game = () => {
   }
 
   const drawInitialHands = () => {
-    setPlayer1(prev => ({ ...prev, hand: prev.deck.slice(0, 5), deck: prev.deck.slice(5) }))
-    setPlayer2(prev => ({ ...prev, hand: prev.deck.slice(0, 5), deck: prev.deck.slice(5) }))
+    setPlayers(prevPlayers => prevPlayers.map(player => ({
+      ...player,
+      hand: player.deck.slice(0, 5),
+      deck: player.deck.slice(5)
+    })))
   }
 
   const drawCard = (playerId) => {
@@ -61,36 +67,71 @@ const Game = () => {
 
   const playCard = (cardIndex) => {
     const currentPlayer = players.find(p => p.id === currentPlayerId)
-    if (currentPlayer.hand[cardIndex].type === 'character') {
-      setPlayers(prevPlayers => prevPlayers.map(player => {
-        if (player.id === currentPlayerId) {
-          const [playedCard] = player.hand.splice(cardIndex, 1)
+    const card = currentPlayer.hand[cardIndex]
+
+    setPlayers(prevPlayers => prevPlayers.map(player => {
+      if (player.id === currentPlayerId) {
+        const [playedCard] = player.hand.splice(cardIndex, 1)
+        if (playedCard.type === 'character') {
           return {
             ...player,
             field: [...player.field, playedCard],
+            hand: [...player.hand],
+            seductionPower: player.seductionPower + 1
+          }
+        } else {
+          return {
+            ...player,
             hand: [...player.hand]
           }
         }
-        return player
-      }))
-      toast.success(`${currentPlayer.name} played ${currentPlayer.hand[cardIndex].name}`)
+      }
+      return player
+    }))
+
+    if (card.type === 'character') {
+      toast.success(`${currentPlayer.name} played ${card.name}. ${card.effect}`, {
+        description: "Things are heating up!",
+      })
     } else {
-      setSelectedCard(currentPlayer.hand[cardIndex])
-      toast.info("Select a target for the card effect")
+      setSelectedCard(card)
+      toast.info("Select a target for the card effect", {
+        description: "Choose wisely, lover boy!",
+      })
     }
   }
 
   const applyCardEffect = (targetPlayerId) => {
     if (!selectedCard) return
 
+    const targetPlayer = players.find(p => p.id === targetPlayerId)
+    const currentPlayer = players.find(p => p.id === currentPlayerId)
+
     // Implement card effect logic here
-    toast.success(`Applied ${selectedCard.name} to ${players.find(p => p.id === targetPlayerId).name}`)
+    switch (selectedCard.name) {
+      case "Erotic Dance":
+        setPlayers(prevPlayers => prevPlayers.map(player => 
+          player.id === targetPlayerId ? {...player, hand: player.hand.slice(0, player.hand.length - 2)} : player
+        ))
+        break
+      case "Love Potion":
+        setPlayers(prevPlayers => prevPlayers.map(player => 
+          player.id === currentPlayerId ? {...player, health: Math.min(player.health + 3, 30), seductionPower: player.seductionPower + 1} : player
+        ))
+        break
+      // Add more cases for other card effects
+    }
+
+    toast.success(`${currentPlayer.name} used ${selectedCard.name} on ${targetPlayer.name}. ${selectedCard.effect}`, {
+      description: "The tension is palpable!",
+    })
     setSelectedCard(null)
   }
 
   const endTurn = () => {
     setCurrentPlayerId(currentPlayerId === 1 ? 2 : 1)
     setGamePhase("draw")
+    setTurnCount(prevCount => prevCount + 1)
   }
 
   const handlePhaseChange = () => {
@@ -103,7 +144,7 @@ const Game = () => {
         setGamePhase("battle")
         break
       case "battle":
-        // Implement battle logic here
+        resolveBattle()
         setGamePhase("end")
         break
       case "end":
@@ -111,6 +152,25 @@ const Game = () => {
         break
       default:
         break
+    }
+  }
+
+  const resolveBattle = () => {
+    const currentPlayer = players.find(p => p.id === currentPlayerId)
+    const opponentPlayer = players.find(p => p.id !== currentPlayerId)
+
+    const damage = currentPlayer.seductionPower - opponentPlayer.seductionPower
+    if (damage > 0) {
+      setPlayers(prevPlayers => prevPlayers.map(player => 
+        player.id !== currentPlayerId ? {...player, health: Math.max(player.health - damage, 0)} : player
+      ))
+      toast.success(`${currentPlayer.name} dealt ${damage} damage to ${opponentPlayer.name}!`, {
+        description: "That's gonna leave a mark... on their heart!",
+      })
+    } else {
+      toast.info("No damage dealt this turn. Try harder next time, Casanova!", {
+        description: "Maybe you need some more practice in the art of seduction?",
+      })
     }
   }
 
@@ -134,7 +194,7 @@ const Game = () => {
           <div className="flex space-x-4">
             {players.map(player => (
               <div key={player.id} className="text-white">
-                {player.name}: {player.health} HP
+                {player.name}: {player.health} HP | Seduction: {player.seductionPower}
               </div>
             ))}
           </div>
@@ -160,6 +220,10 @@ const Game = () => {
           <Button onClick={handlePhaseChange} variant="secondary">
             {gamePhase === "end" ? "End Turn" : `Next Phase (${gamePhase})`}
           </Button>
+        </div>
+
+        <div className="mt-4 text-center text-white">
+          Turn: {turnCount} | Current Player: {players.find(p => p.id === currentPlayerId).name}
         </div>
       </div>
     </div>
