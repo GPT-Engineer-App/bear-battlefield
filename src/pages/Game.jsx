@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "sonner"
 import { useQuery } from "@tanstack/react-query"
+import { motion, AnimatePresence } from "framer-motion"
+import { Sparkles, Zap, Heart, Droplet } from "lucide-react"
 import GameBoard from "../components/GameBoard"
 import PlayerHand from "../components/PlayerHand"
 import GameStats from "../components/GameStats"
@@ -172,25 +174,75 @@ const Game = () => {
     const targetPlayer = players.find(p => p.id === targetPlayerId)
     const currentPlayer = players.find(p => p.id === currentPlayerId)
 
-    // Implement card effect logic here
-    switch (selectedCard.name) {
-      case "Erotic Dance":
-        setPlayers(prevPlayers => prevPlayers.map(player => 
-          player.id === targetPlayerId ? {...player, hand: player.hand.slice(0, player.hand.length - 2)} : player
-        ))
-        break
-      case "Love Potion":
-        setPlayers(prevPlayers => prevPlayers.map(player => 
-          player.id === currentPlayerId ? {...player, health: Math.min(player.health + 3, 30), seductionPower: player.seductionPower + 1} : player
-        ))
-        break
-      // Add more cases for other card effects
-    }
+    setPlayers(prevPlayers => {
+      let updatedPlayers = [...prevPlayers]
+
+      switch (selectedCard.name) {
+        case "Pillow Talk":
+          updatedPlayers = updatedPlayers.map(player =>
+            player.id === targetPlayerId ? {...player, hand: player.hand.slice(0, player.hand.length - 2)} : player
+          )
+          break
+        case "Spiked Honey":
+          updatedPlayers = updatedPlayers.map(player =>
+            player.id === currentPlayerId ? {...player, health: Math.min(player.health + 3, 30), seductionPower: player.seductionPower + 1} : player
+          )
+          break
+        case "Party Hat":
+          updatedPlayers = updatedPlayers.map(player =>
+            player.id === currentPlayerId ? {...player, seductionPower: player.seductionPower + 2} : player
+          )
+          break
+        case "Teddy Nightclub":
+          updatedPlayers = updatedPlayers.map(player => ({
+            ...player,
+            seductionPower: player.seductionPower + 1,
+            mana: Math.max(player.mana - 1, 0)
+          }))
+          break
+        case "Puppy Dog Eyes":
+          updatedPlayers = updatedPlayers.map(player =>
+            player.id === targetPlayerId ? {...player, seductionPower: Math.max(player.seductionPower - 2, 0)} : player
+          )
+          break
+        case "Silly Jokes":
+          updatedPlayers = updatedPlayers.map(player =>
+            player.id === targetPlayerId ? {...player, hand: []} : player
+          )
+          break
+        case "Dance-Off":
+          const drawnCards = currentPlayer.deck.slice(0, 3)
+          updatedPlayers = updatedPlayers.map(player => {
+            if (player.id === currentPlayerId) {
+              return {
+                ...player,
+                hand: [...player.hand, ...drawnCards],
+                deck: player.deck.slice(3)
+              }
+            } else {
+              return {
+                ...player,
+                health: Math.max(player.health - drawnCards.length, 0)
+              }
+            }
+          })
+          break
+        case "Tea Party":
+          updatedPlayers = updatedPlayers.map(player => ({
+            ...player,
+            field: player.field.map(card => ({...card, hp: card.hp + 1}))
+          }))
+          break
+      }
+
+      return updatedPlayers
+    })
 
     toast.success(`${currentPlayer.name} used ${selectedCard.name} on ${targetPlayer.name}. ${selectedCard.effect}`, {
       description: "The tension is palpable!",
     })
     setSelectedCard(null)
+    addToGameLog(`${currentPlayer.name} used ${selectedCard.name} on ${targetPlayer.name}`)
   }
 
   const endTurn = () => {
@@ -229,7 +281,39 @@ const Game = () => {
     const currentPlayer = players.find(p => p.id === currentPlayerId)
     const opponentPlayer = players.find(p => p.id !== currentPlayerId)
 
-    const damage = currentPlayer.seductionPower - opponentPlayer.seductionPower
+    let damage = currentPlayer.seductionPower - opponentPlayer.seductionPower
+
+    // Apply character abilities
+    currentPlayer.field.forEach(card => {
+      switch (card.ability) {
+        case "Seductive Wink":
+          damage += 1
+          break
+        case "Lingerie Charm":
+          opponentPlayer.seductionPower = Math.max(opponentPlayer.seductionPower - 1, 0)
+          break
+        case "Bondage Trap":
+          opponentPlayer.mana = Math.max(opponentPlayer.mana - 1, 0)
+          break
+        case "Tickle Attack":
+          if (opponentPlayer.hand.length > 0) {
+            const discardIndex = Math.floor(Math.random() * opponentPlayer.hand.length)
+            opponentPlayer.hand.splice(discardIndex, 1)
+          }
+          break
+        case "Bear Hug":
+          currentPlayer.health = Math.min(currentPlayer.health + 2, 30)
+          break
+        case "Fluffy Healing":
+          const healAmount = currentPlayer.field.length
+          currentPlayer.health = Math.min(currentPlayer.health + healAmount, 30)
+          break
+        case "Mimic Master":
+          // Implement copying ability logic here
+          break
+      }
+    })
+
     if (damage > 0) {
       setPlayers(prevPlayers => prevPlayers.map(player => 
         player.id !== currentPlayerId ? {...player, health: Math.max(player.health - damage, 0)} : player
@@ -241,16 +325,19 @@ const Game = () => {
       toast.success(`${currentPlayer.name} dealt ${damage} damage to ${opponentPlayer.name}!`, {
         description: "That teddy's gonna need some stitches!",
       })
+      addToGameLog(`${currentPlayer.name} dealt ${damage} damage to ${opponentPlayer.name}`)
     } else {
       toast.info("No damage dealt this turn. Better luck next time!", {
         description: "Even teddy bears have off days.",
       })
+      addToGameLog("No damage dealt this turn")
     }
 
     // Check for game over condition
     if (opponentPlayer.health <= 0) {
       setWinner(currentPlayer)
       setShowVictoryDialog(true)
+      addToGameLog(`${currentPlayer.name} has won the game!`)
     }
   }
 
@@ -332,7 +419,7 @@ const Game = () => {
         <div className="mb-4 flex justify-center items-center">
           <Badge variant="secondary" className="text-lg px-4 py-2">
             <Clock className="mr-2" />
-            Turn: {turnCount} | Current Player: {players.find(p => p.id === currentPlayerId).name}
+            Turn: {turnCount} | Current Player: {players.find(p => p.id === currentPlayerId).name} | Phase: {gamePhase}
           </Badge>
         </div>
 
