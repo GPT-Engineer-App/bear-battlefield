@@ -616,7 +616,16 @@ const Game = () => {
         </div>
 
         <div className="mt-8 flex justify-center">
-          <img src="/placeholder.svg" alt="Game Atmosphere" className="mx-auto object-cover w-full h-48 rounded-lg shadow-lg" />
+          <div className="w-full h-48 rounded-lg shadow-lg bg-gradient-to-r from-pink-300 to-purple-300 relative overflow-hidden">
+            <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="20" cy="20" r="15" fill="rgba(255,255,255,0.2)" />
+              <circle cx="80" cy="80" r="20" fill="rgba(255,255,255,0.2)" />
+              <circle cx="50" cy="50" r="25" fill="rgba(255,255,255,0.2)" />
+            </svg>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <h2 className="text-3xl font-bold text-white">Sultry Seductions Arena</h2>
+            </div>
+          </div>
         </div>
 
         <div className="mt-12 flex justify-between items-start">

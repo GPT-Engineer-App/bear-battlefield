@@ -43,7 +43,12 @@ const GameBoard = ({ players }) => {
                               <Sparkles className="w-3 h-3" />
                             </div>
                           </CardContent>
-                          <img src="/placeholder.svg" alt={card.name} className="absolute inset-0 w-full h-full object-cover opacity-10" />
+                          <svg className="absolute inset-0 w-full h-full opacity-10" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="50" cy="30" r="20" fill="currentColor" />
+                            <circle cx="40" cy="20" r="5" fill="white" />
+                            <circle cx="60" cy="20" r="5" fill="white" />
+                            <circle cx="50" cy="70" r="30" fill="currentColor" />
+                          </svg>
                         </Card>
                       </motion.div>
                     </TooltipTrigger>
