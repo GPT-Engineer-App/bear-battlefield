@@ -5,6 +5,7 @@ import { toast } from "sonner"
 import GameBoard from "../components/GameBoard"
 import PlayerHand from "../components/PlayerHand"
 import { initialDeck } from "../data/cards"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 
 const Game = () => {
   const [players, setPlayers] = useState([
@@ -31,6 +32,8 @@ const Game = () => {
   const [gamePhase, setGamePhase] = useState("setup")
   const [selectedCard, setSelectedCard] = useState(null)
   const [turnCount, setTurnCount] = useState(0)
+  const [showVictoryDialog, setShowVictoryDialog] = useState(false)
+  const [winner, setWinner] = useState(null)
 
   useEffect(() => {
     if (gamePhase === "setup") {
@@ -165,12 +168,18 @@ const Game = () => {
         player.id !== currentPlayerId ? {...player, health: Math.max(player.health - damage, 0)} : player
       ))
       toast.success(`${currentPlayer.name} dealt ${damage} damage to ${opponentPlayer.name}!`, {
-        description: "That's gonna leave a mark... on their heart!",
+        description: "That teddy's gonna need some stitches!",
       })
     } else {
-      toast.info("No damage dealt this turn. Try harder next time, Casanova!", {
-        description: "Maybe you need some more practice in the art of seduction?",
+      toast.info("No damage dealt this turn. Better luck next time!", {
+        description: "Even teddy bears have off days.",
       })
+    }
+
+    // Check for game over condition
+    if (opponentPlayer.health <= 0) {
+      setWinner(currentPlayer)
+      setShowVictoryDialog(true)
     }
   }
 
@@ -187,14 +196,14 @@ const Game = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-red-400 to-pink-500 p-4">
+    <div className="min-h-screen bg-gradient-to-b from-amber-200 to-yellow-400 p-4">
       <div className="max-w-4xl mx-auto">
         <header className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-white">Sultry Seductions</h1>
+          <h1 className="text-2xl font-bold text-brown-800">Terrible Teddies: Naughty Bear Brawl</h1>
           <div className="flex space-x-4">
             {players.map(player => (
-              <div key={player.id} className="text-white">
-                {player.name}: {player.health} HP | Seduction: {player.seductionPower}
+              <div key={player.id} className="text-brown-800">
+                {player.name}: {player.health} HP | Mischief: {player.seductionPower}
               </div>
             ))}
           </div>
@@ -222,10 +231,22 @@ const Game = () => {
           </Button>
         </div>
 
-        <div className="mt-4 text-center text-white">
+        <div className="mt-4 text-center text-brown-800">
           Turn: {turnCount} | Current Player: {players.find(p => p.id === currentPlayerId).name}
         </div>
       </div>
+
+      <Dialog open={showVictoryDialog} onOpenChange={setShowVictoryDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Victory!</DialogTitle>
+            <DialogDescription>
+              {winner && `${winner.name} has won the Naughty Bear Brawl!`}
+            </DialogDescription>
+          </DialogHeader>
+          <Button onClick={() => window.location.reload()}>Play Again</Button>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
