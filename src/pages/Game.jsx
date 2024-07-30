@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { motion, AnimatePresence } from "framer-motion"
 import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Heart, Droplet, Sparkles } from "lucide-react"
+import { Heart, Droplet, Sparkles, Zap, Clock } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 const Game = () => {
   const [players, setPlayers] = useState([
@@ -291,7 +292,7 @@ const Game = () => {
             {players.map(player => (
               <motion.div
                 key={player.id}
-                className="text-purple-800 bg-white rounded-xl p-4 shadow-lg"
+                className={`text-purple-800 bg-white rounded-xl p-4 shadow-lg ${currentPlayerId === player.id ? 'ring-4 ring-pink-400' : ''}`}
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
@@ -303,6 +304,7 @@ const Game = () => {
                       <div className="flex items-center space-x-2 mb-2">
                         <Heart className="text-red-500" />
                         <Progress value={(player.health / 30) * 100} className="w-32" />
+                        <span className="text-sm font-bold">{player.health}/30</span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -312,16 +314,27 @@ const Game = () => {
                 </TooltipProvider>
                 <div className="flex items-center space-x-2 mb-2">
                   <Droplet className="text-blue-500" />
-                  <span>{player.mana}/{player.maxMana}</span>
+                  <Progress value={(player.mana / player.maxMana) * 100} className="w-32" />
+                  <span className="text-sm font-bold">{player.mana}/{player.maxMana}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Sparkles className="text-yellow-500" />
-                  <span>{player.seductionPower}</span>
+                  <span className="text-sm font-bold">{player.seductionPower}</span>
+                </div>
+                <div className="flex items-center space-x-2 mt-2">
+                  <Zap className="text-purple-500" />
+                  <span className="text-sm font-bold">{player.deck.length}</span>
                 </div>
               </motion.div>
             ))}
           </div>
         </header>
+        <div className="mb-4 flex justify-center items-center">
+          <Badge variant="secondary" className="text-lg px-4 py-2">
+            <Clock className="mr-2" />
+            Turn: {turnCount} | Current Player: {players.find(p => p.id === currentPlayerId).name}
+          </Badge>
+        </div>
 
         <div className="grid grid-cols-4 gap-6">
           <AnimatePresence>
@@ -374,9 +387,6 @@ const Game = () => {
             <Button onClick={handlePhaseChange} variant="secondary" className="text-lg px-6 py-3">
               {gamePhase === "end" ? "End Turn" : `Next Phase (${gamePhase})`}
             </Button>
-            <div className="mt-4 text-purple-800 font-semibold">
-              Turn: {turnCount} | Current Player: {players.find(p => p.id === currentPlayerId).name}
-            </div>
           </div>
           <GameLog log={gameLog} logRef={logRef} />
         </div>
