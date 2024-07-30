@@ -4,8 +4,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "sonner"
 import { useQuery } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "framer-motion"
-import { Sparkles, Zap, Heart, Droplet, Shield, Clock } from "lucide-react"
+import { Sparkles, Zap, Heart, Droplet, Shield, Clock, ArrowRight } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Progress } from "@/components/ui/progress"
 import GameBoard from "../components/GameBoard"
 import PlayerHand from "../components/PlayerHand"
 import GameStats from "../components/GameStats"
@@ -512,9 +513,22 @@ const Game = () => {
         <div className="mt-12 flex justify-between items-start">
           <GameStats stats={gameStats} />
           <div className="text-center">
-            <Button onClick={handlePhaseChange} variant="secondary" className="text-lg px-6 py-3">
-              {gamePhase === "end" ? "End Turn" : `Next Phase (${gamePhase})`}
+            <Button 
+              onClick={handlePhaseChange} 
+              variant="secondary" 
+              className="text-lg px-6 py-3 transition-all duration-300 hover:bg-pink-500 hover:text-white"
+            >
+              {gamePhase === "end" ? (
+                <>End Turn <ArrowRight className="ml-2 inline" /></>
+              ) : (
+                <>Next Phase ({gamePhase}) <ArrowRight className="ml-2 inline" /></>
+              )}
             </Button>
+            <Progress 
+              value={(turnTimer / 60) * 100} 
+              className="w-full mt-2" 
+              indicatorClassName={`${turnTimer <= 10 ? 'animate-pulse bg-red-500' : 'bg-green-500'}`}
+            />
           </div>
           <GameLog log={gameLog} logRef={logRef} />
         </div>

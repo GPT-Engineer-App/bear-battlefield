@@ -8,6 +8,11 @@ const PlayerHand = ({ player, isCurrentPlayer, onCardClick, onPlayerClick }) => 
   const canPlayCard = (card) => {
     return isCurrentPlayer && player.mana >= card.manaCost;
   };
+
+  const cardVariants = {
+    hover: { scale: 1.05, rotate: 5, transition: { duration: 0.2 } },
+    tap: { scale: 0.95, rotate: -2, transition: { duration: 0.1 } },
+  };
   return (
     <div
       className={`bg-white rounded-xl p-6 shadow-lg ${isCurrentPlayer ? 'ring-4 ring-pink-400' : ''}`}
@@ -22,12 +27,14 @@ const PlayerHand = ({ player, isCurrentPlayer, onCardClick, onPlayerClick }) => 
             <Tooltip>
               <TooltipTrigger asChild>
                 <motion.div
-                  whileHover={{ scale: 1.05, rotate: 5 }}
-                  whileTap={{ scale: 0.95 }}
+                  variants={cardVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                  animate={canPlayCard(card) ? "idle" : "disabled"}
                 >
                   <Card
-                    className={`w-36 h-52 cursor-pointer hover:shadow-xl transition-shadow relative overflow-hidden bg-gradient-to-br from-pink-100 to-purple-100 ${
-                      !canPlayCard(card) ? 'opacity-50' : ''
+                    className={`w-36 h-52 cursor-pointer hover:shadow-xl transition-all duration-300 relative overflow-hidden bg-gradient-to-br from-pink-100 to-purple-100 ${
+                      !canPlayCard(card) ? 'opacity-50 grayscale' : 'hover:from-pink-200 hover:to-purple-200'
                     }`}
                     onClick={() => canPlayCard(card) && onCardClick(index)}
                   >
