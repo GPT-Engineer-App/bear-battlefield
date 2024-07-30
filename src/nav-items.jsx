@@ -1,14 +1,32 @@
-import { Home } from "lucide-react";
+import { Home, PlayCircle, BookOpen, Settings } from "lucide-react";
 import Index from "./pages/Index.jsx";
+import Game from "./pages/Game.jsx";
+import Rules from "./pages/Rules.jsx";
+import Settings from "./pages/Settings.jsx";
 
-/**
- * Central place for defining the navigation items. Used for navigation components and routing.
- */
 export const navItems = [
   {
     title: "Home",
     to: "/",
     icon: <Home className="h-4 w-4" />,
     page: <Index />,
+  },
+  {
+    title: "Game",
+    to: "/game",
+    icon: <PlayCircle className="h-4 w-4" />,
+    page: <Game />,
+  },
+  {
+    title: "Rules",
+    to: "/rules",
+    icon: <BookOpen className="h-4 w-4" />,
+    page: <Rules />,
+  },
+  {
+    title: "Settings",
+    to: "/settings",
+    icon: <Settings className="h-4 w-4" />,
+    page: <Settings />,
   },
 ];
