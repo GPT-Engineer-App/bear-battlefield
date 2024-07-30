@@ -19,7 +19,7 @@ const GameBoard = ({ players }) => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                       >
-                        <Card className="w-24 h-36 bg-white shadow-lg">
+                        <Card className="w-24 h-36 bg-white shadow-lg relative overflow-hidden">
                           <CardContent className="p-2 text-xs">
                             <div className="font-bold mb-1 text-center">{card.name}</div>
                             <div className="text-center mb-1">HP: {card.hp}</div>
@@ -27,6 +27,7 @@ const GameBoard = ({ players }) => {
                               <div className="text-blue-600 text-center text-[8px]">{card.ability}</div>
                             )}
                           </CardContent>
+                          <img src="/placeholder.svg" alt={card.name} className="absolute inset-0 w-full h-full object-cover opacity-25" />
                         </Card>
                       </motion.div>
                     </TooltipTrigger>

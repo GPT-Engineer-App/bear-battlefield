@@ -12,11 +12,9 @@ import GameStats from "../components/GameStats"
 import GameLog from "../components/GameLog"
 import { initialDeck } from "../data/cards"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { motion, AnimatePresence } from "framer-motion"
 import { Progress } from "@/components/ui/progress"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { Heart, Droplet, Sparkles, Zap, Clock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { run_game_development } from "../ai/game_development"
 
 const Game = () => {
   const [players, setPlayers] = useState([
@@ -42,6 +40,7 @@ const Game = () => {
       hand: [],
       field: [],
       seductionPower: 0,
+      defense: 0,
     }
   ])
   const [currentPlayerId, setCurrentPlayerId] = useState(1)
@@ -381,26 +380,28 @@ const Game = () => {
     }
   }
 
-  // Debug query
-  const { data: debugData, isLoading, error } = useQuery({
-    queryKey: ['debugData'],
-    queryFn: () => Promise.resolve({ message: "Debug data loaded successfully" }),
+  const { data: aiSuggestion, isLoading, error } = useQuery({
+    queryKey: ['aiSuggestion', currentPlayerId, gamePhase],
+    queryFn: () => run_game_development(),
+    enabled: gamePhase === 'play',
   })
 
   useEffect(() => {
-    if (debugData) {
-      console.log("Debug data:", debugData)
+    if (aiSuggestion) {
+      toast.info("AI Suggestion", {
+        description: aiSuggestion,
+      })
     }
     if (error) {
-      console.error("Error fetching debug data:", error)
+      console.error("Error fetching AI suggestion:", error)
     }
-  }, [debugData, error])
+  }, [aiSuggestion, error])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-pink-200 to-purple-300 p-4">
       <div className="max-w-7xl mx-auto">
-        {isLoading && <p>Loading debug data...</p>}
-        {error && <p>Error: {error.message}</p>}
+        {isLoading && <p className="text-center text-white">AI is thinking...</p>}
+        {error && <p className="text-center text-red-500">Error: {error.message}</p>}
         <header className="flex justify-between items-center mb-8">
           <h1 className="text-4xl font-bold text-purple-800 font-serif">Sultry Seductions: Battle of Desires</h1>
           <div className="flex space-x-6">
@@ -502,6 +503,10 @@ const Game = () => {
               />
             </motion.div>
           </AnimatePresence>
+        </div>
+
+        <div className="mt-8 flex justify-center">
+          <img src="/placeholder.svg" alt="Game Atmosphere" className="mx-auto object-cover w-full h-48 rounded-lg shadow-lg" />
         </div>
 
         <div className="mt-12 flex justify-between items-start">

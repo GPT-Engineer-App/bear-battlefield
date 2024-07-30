@@ -51,6 +51,7 @@ const PlayerHand = ({ player, isCurrentPlayer, onCardClick, onPlayerClick }) => 
                         {card.effect}
                       </div>
                     </CardContent>
+                    <img src="/placeholder.svg" alt={card.name} className="absolute inset-0 w-full h-full object-cover opacity-10" />
                   </Card>
                 </motion.div>
               </TooltipTrigger>
