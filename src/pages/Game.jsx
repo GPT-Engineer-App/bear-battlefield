@@ -164,8 +164,6 @@ const Game = () => {
       logRef.current.scrollTop = logRef.current.scrollHeight
     }
   }, [])
-    }
-  }
 
   const applyCardEffect = (targetPlayerId) => {
     if (!selectedCard) return
