@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "sonner"
+import { useQuery } from "@tanstack/react-query"
 import GameBoard from "../components/GameBoard"
 import PlayerHand from "../components/PlayerHand"
 import GameStats from "../components/GameStats"
@@ -57,10 +58,19 @@ const Game = () => {
     }
   }, [gamePhase])
 
-  const setupGame = () => {
+  const setupGame = useCallback(() => {
+    console.log("Setting up game...")
     drawInitialHands()
     setGamePhase("draw")
-  }
+  }, [])
+
+  useEffect(() => {
+    console.log("Game phase changed:", gamePhase)
+  }, [gamePhase])
+
+  useEffect(() => {
+    console.log("Current player changed:", currentPlayerId)
+  }, [currentPlayerId])
 
   const drawInitialHands = () => {
     setPlayers(prevPlayers => prevPlayers.map(player => ({
@@ -70,25 +80,36 @@ const Game = () => {
     })))
   }
 
-  const drawCard = (playerId) => {
-    setPlayers(prevPlayers => prevPlayers.map(player => {
-      if (player.id === playerId && player.deck.length > 0) {
-        const [drawnCard, ...remainingDeck] = player.deck
-        return {
-          ...player,
-          hand: [...player.hand, drawnCard],
-          deck: remainingDeck
+  const drawCard = useCallback((playerId) => {
+    console.log(`Drawing card for player ${playerId}`)
+    setPlayers(prevPlayers => {
+      const updatedPlayers = prevPlayers.map(player => {
+        if (player.id === playerId && player.deck.length > 0) {
+          const [drawnCard, ...remainingDeck] = player.deck
+          console.log(`Player ${playerId} drew:`, drawnCard)
+          return {
+            ...player,
+            hand: [...player.hand, drawnCard],
+            deck: remainingDeck
+          }
         }
-      }
-      return player
-    }))
-  }
+        return player
+      })
+      console.log("Updated players state:", updatedPlayers)
+      return updatedPlayers
+    })
+  }, [])
 
-  const playCard = (cardIndex) => {
+  const playCard = useCallback((cardIndex) => {
+    console.log(`Playing card at index ${cardIndex}`)
     const currentPlayer = players.find(p => p.id === currentPlayerId)
     const card = currentPlayer.hand[cardIndex]
 
+    console.log("Current player:", currentPlayer)
+    console.log("Card being played:", card)
+
     if (currentPlayer.mana < card.manaCost) {
+      console.log("Not enough mana to play this card")
       toast.error("Not enough mana to play this card!", {
         description: "Try another card or end your turn.",
       })
@@ -243,9 +264,26 @@ const Game = () => {
     }
   }
 
+  // Debug query
+  const { data: debugData, isLoading, error } = useQuery({
+    queryKey: ['debugData'],
+    queryFn: () => Promise.resolve({ message: "Debug data loaded successfully" }),
+  })
+
+  useEffect(() => {
+    if (debugData) {
+      console.log("Debug data:", debugData)
+    }
+    if (error) {
+      console.error("Error fetching debug data:", error)
+    }
+  }, [debugData, error])
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-200 to-yellow-400 p-4">
       <div className="max-w-6xl mx-auto">
+        {isLoading && <p>Loading debug data...</p>}
+        {error && <p>Error: {error.message}</p>}
         <header className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-brown-800">Terrible Teddies: Naughty Bear Brawl</h1>
           <div className="flex space-x-4">
