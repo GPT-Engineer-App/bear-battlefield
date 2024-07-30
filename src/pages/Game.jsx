@@ -97,10 +97,10 @@ const Game = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-400 to-pink-500 p-4">
+    <div className="min-h-screen bg-gradient-to-b from-red-400 to-pink-500 p-4">
       <div className="max-w-4xl mx-auto">
         <header className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-white">Terrible Teddies</h1>
+          <h1 className="text-2xl font-bold text-white">Sultry Seductions</h1>
           <div className="flex space-x-4">
             <div className="text-white">Player 1: {player1.health} HP</div>
             <div className="text-white">Player 2: {player2.health} HP</div>

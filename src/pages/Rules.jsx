@@ -7,11 +7,11 @@ const Rules = () => {
       <div className="bg-white rounded-lg p-8 max-w-2xl w-full">
         <h1 className="text-3xl font-bold mb-6 text-center">Game Rules</h1>
         <div className="space-y-4 mb-6">
-          <p>1. Each player starts with a hand of 5 cards.</p>
-          <p>2. Players take turns placing one card on the game board.</p>
-          <p>3. Cards have attack and defense values, and special abilities.</p>
-          <p>4. The goal is to reduce your opponent's life points to zero.</p>
-          <p>5. Be prepared for hilarious teddy bear puns and unexpected twists!</p>
+          <p>1. Each player starts with a hand of 5 seduction cards.</p>
+          <p>2. Players take turns playing cards to seduce or charm their opponent.</p>
+          <p>3. Cards have seduction and resistance values, along with special abilities.</p>
+          <p>4. The goal is to reduce your opponent's willpower to zero.</p>
+          <p>5. Be prepared for steamy encounters and passionate twists!</p>
         </div>
         <div className="text-center">
           <Button asChild>
