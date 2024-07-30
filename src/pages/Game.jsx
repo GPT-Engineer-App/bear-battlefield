@@ -156,7 +156,7 @@ const Game = () => {
         description: "Choose wisely, lover boy!",
       })
     }
-  }
+  }, [])
 
   const addToGameLog = useCallback((message) => {
     setGameLog(prevLog => [...prevLog, message])
