@@ -1,4 +1,4 @@
-import { Home, PlayCircle, BookOpen, Settings } from "lucide-react";
+import { Home, PlayCircle, BookOpen, Settings as SettingsIcon } from "lucide-react";
 import Index from "./pages/Index.jsx";
 import Game from "./pages/Game.jsx";
 import Rules from "./pages/Rules.jsx";
@@ -26,7 +26,7 @@ export const navItems = [
   {
     title: "Settings",
     to: "/settings",
-    icon: <Settings className="h-4 w-4" />,
+    icon: <SettingsIcon className="h-4 w-4" />,
     page: <Settings />,
   },
 ];
