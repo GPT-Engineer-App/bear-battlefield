@@ -5,6 +5,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import GameBoard from "../components/GameBoard"
 import PlayerHand from "../components/PlayerHand"
 import { initialDeck } from "../data/cards"
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import GameBoard from "../components/GameBoard"
+import PlayerHand from "../components/PlayerHand"
+import { initialDeck } from "../data/cards"
 import { run_game_development } from "../ai/game_development"
 
 const Game = () => {
@@ -15,6 +22,7 @@ const Game = () => {
     hand: [],
     field: [],
   })
+  const [aiResult, setAiResult] = useState(null)
   const [player2, setPlayer2] = useState({
     name: "Player 2",
     health: 30,
@@ -109,13 +117,31 @@ const Game = () => {
           <Button onClick={handlePhaseChange} variant="secondary">
             {gamePhase === "end" ? "End Turn" : `Next Phase (${gamePhase})`}
           </Button>
-          <Button onClick={() => run_game_development()} variant="primary">
-            Run AI Game Development
+          <Button onClick={handleAiDevelopment} variant="primary" disabled={aiResult !== null}>
+            {aiResult ? "AI Development Complete" : "Run AI Game Development"}
           </Button>
+          {aiResult && (
+            <Card className="mt-4">
+              <CardContent className="p-4">
+                <h3 className="text-lg font-semibold mb-2">AI Development Result:</h3>
+                <p className="whitespace-pre-wrap">{aiResult}</p>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
   )
+}
+
+const handleAiDevelopment = async () => {
+  try {
+    const result = await run_game_development()
+    setAiResult(result)
+  } catch (error) {
+    console.error("Error running AI game development:", error)
+    setAiResult("An error occurred while running AI game development.")
+  }
 }
 
 export default Game
