@@ -158,10 +158,12 @@ const Game = () => {
     }
   }
 
-  const addToGameLog = (message) => {
+  const addToGameLog = useCallback((message) => {
     setGameLog(prevLog => [...prevLog, message])
     if (logRef.current) {
       logRef.current.scrollTop = logRef.current.scrollHeight
+    }
+  }, [])
     }
   }
 
