@@ -17,7 +17,7 @@ const PlayerHand = ({ player, isCurrentPlayer, onCardClick, onPlayerClick }) => 
             <Tooltip>
               <TooltipTrigger asChild>
                 <Card
-                  className="h-32 cursor-pointer hover:bg-gray-100 transition-colors"
+                  className="h-40 cursor-pointer hover:bg-gray-100 transition-colors relative"
                   onClick={() => isCurrentPlayer && onCardClick(index)}
                 >
                   <CardContent className="p-2 text-xs">
@@ -29,6 +29,9 @@ const PlayerHand = ({ player, isCurrentPlayer, onCardClick, onPlayerClick }) => 
                     {card.ability && (
                       <div className="text-blue-600">Ability: {card.ability}</div>
                     )}
+                    <div className="absolute top-1 right-1 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                      {card.manaCost}
+                    </div>
                   </CardContent>
                 </Card>
               </TooltipTrigger>

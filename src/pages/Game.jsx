@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "sonner"
 import GameBoard from "../components/GameBoard"
 import PlayerHand from "../components/PlayerHand"
 import GameStats from "../components/GameStats"
+import GameLog from "../components/GameLog"
 import { initialDeck } from "../data/cards"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { motion, AnimatePresence } from "framer-motion"
@@ -15,6 +16,7 @@ const Game = () => {
       id: 1,
       name: "Player 1",
       health: 30,
+      mana: 1,
       deck: [...initialDeck],
       hand: [],
       field: [],
@@ -24,6 +26,7 @@ const Game = () => {
       id: 2,
       name: "Player 2",
       health: 30,
+      mana: 1,
       deck: [...initialDeck],
       hand: [],
       field: [],
@@ -41,6 +44,8 @@ const Game = () => {
     damageDealt: 0,
     healingDone: 0,
   })
+  const [gameLog, setGameLog] = useState([])
+  const logRef = useRef(null)
 
   useEffect(() => {
     if (gamePhase === "setup") {
@@ -79,6 +84,13 @@ const Game = () => {
     const currentPlayer = players.find(p => p.id === currentPlayerId)
     const card = currentPlayer.hand[cardIndex]
 
+    if (currentPlayer.mana < card.manaCost) {
+      toast.error("Not enough mana to play this card!", {
+        description: "Try another card or end your turn.",
+      })
+      return
+    }
+
     setPlayers(prevPlayers => prevPlayers.map(player => {
       if (player.id === currentPlayerId) {
         const [playedCard] = player.hand.splice(cardIndex, 1)
@@ -87,12 +99,14 @@ const Game = () => {
             ...player,
             field: [...player.field, playedCard],
             hand: [...player.hand],
-            seductionPower: player.seductionPower + 1
+            seductionPower: player.seductionPower + 1,
+            mana: player.mana - playedCard.manaCost
           }
         } else {
           return {
             ...player,
-            hand: [...player.hand]
+            hand: [...player.hand],
+            mana: player.mana - playedCard.manaCost
           }
         }
       }
@@ -104,6 +118,8 @@ const Game = () => {
       cardsPlayed: prevStats.cardsPlayed + 1
     }))
 
+    addToGameLog(`${currentPlayer.name} played ${card.name}`)
+
     if (card.type === 'character') {
       toast.success(`${currentPlayer.name} played ${card.name}. ${card.effect}`, {
         description: "Things are heating up!",
@@ -113,6 +129,13 @@ const Game = () => {
       toast.info("Select a target for the card effect", {
         description: "Choose wisely, lover boy!",
       })
+    }
+  }
+
+  const addToGameLog = (message) => {
+    setGameLog(prevLog => [...prevLog, message])
+    if (logRef.current) {
+      logRef.current.scrollTop = logRef.current.scrollHeight
     }
   }
 
@@ -213,7 +236,7 @@ const Game = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-amber-200 to-yellow-400 p-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <header className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold text-brown-800">Terrible Teddies: Naughty Bear Brawl</h1>
           <div className="flex space-x-4">
@@ -225,13 +248,13 @@ const Game = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                {player.name}: {player.health} HP | Mischief: {player.seductionPower}
+                {player.name}: {player.health} HP | Mischief: {player.seductionPower} | Mana: {player.mana}
               </motion.div>
             ))}
           </div>
         </header>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <AnimatePresence>
             <motion.div
               key="player1"
@@ -239,6 +262,7 @@ const Game = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -50 }}
               transition={{ duration: 0.5 }}
+              className="col-span-1"
             >
               <PlayerHand
                 player={players[0]}
@@ -253,6 +277,7 @@ const Game = () => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 50 }}
               transition={{ duration: 0.5 }}
+              className="col-span-2"
             >
               <GameBoard players={players} />
             </motion.div>
@@ -262,6 +287,7 @@ const Game = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 50 }}
               transition={{ duration: 0.5 }}
+              className="col-span-1"
             >
               <PlayerHand
                 player={players[1]}
@@ -273,17 +299,18 @@ const Game = () => {
           </AnimatePresence>
         </div>
 
-        <div className="mt-8 text-center">
-          <Button onClick={handlePhaseChange} variant="secondary">
-            {gamePhase === "end" ? "End Turn" : `Next Phase (${gamePhase})`}
-          </Button>
+        <div className="mt-8 flex justify-between items-start">
+          <GameStats stats={gameStats} />
+          <div className="text-center">
+            <Button onClick={handlePhaseChange} variant="secondary">
+              {gamePhase === "end" ? "End Turn" : `Next Phase (${gamePhase})`}
+            </Button>
+            <div className="mt-2 text-brown-800">
+              Turn: {turnCount} | Current Player: {players.find(p => p.id === currentPlayerId).name}
+            </div>
+          </div>
+          <GameLog log={gameLog} logRef={logRef} />
         </div>
-
-        <div className="mt-4 text-center text-brown-800">
-          Turn: {turnCount} | Current Player: {players.find(p => p.id === currentPlayerId).name}
-        </div>
-
-        <GameStats stats={gameStats} />
       </div>
 
       <Dialog open={showVictoryDialog} onOpenChange={setShowVictoryDialog}>
