@@ -4,8 +4,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "sonner"
 import GameBoard from "../components/GameBoard"
 import PlayerHand from "../components/PlayerHand"
+import GameStats from "../components/GameStats"
 import { initialDeck } from "../data/cards"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
+import { motion, AnimatePresence } from "framer-motion"
 
 const Game = () => {
   const [players, setPlayers] = useState([
@@ -34,6 +36,11 @@ const Game = () => {
   const [turnCount, setTurnCount] = useState(0)
   const [showVictoryDialog, setShowVictoryDialog] = useState(false)
   const [winner, setWinner] = useState(null)
+  const [gameStats, setGameStats] = useState({
+    cardsPlayed: 0,
+    damageDealt: 0,
+    healingDone: 0,
+  })
 
   useEffect(() => {
     if (gamePhase === "setup") {
@@ -90,6 +97,11 @@ const Game = () => {
         }
       }
       return player
+    }))
+
+    setGameStats(prevStats => ({
+      ...prevStats,
+      cardsPlayed: prevStats.cardsPlayed + 1
     }))
 
     if (card.type === 'character') {
@@ -167,6 +179,10 @@ const Game = () => {
       setPlayers(prevPlayers => prevPlayers.map(player => 
         player.id !== currentPlayerId ? {...player, health: Math.max(player.health - damage, 0)} : player
       ))
+      setGameStats(prevStats => ({
+        ...prevStats,
+        damageDealt: prevStats.damageDealt + damage
+      }))
       toast.success(`${currentPlayer.name} dealt ${damage} damage to ${opponentPlayer.name}!`, {
         description: "That teddy's gonna need some stitches!",
       })
@@ -202,27 +218,59 @@ const Game = () => {
           <h1 className="text-2xl font-bold text-brown-800">Terrible Teddies: Naughty Bear Brawl</h1>
           <div className="flex space-x-4">
             {players.map(player => (
-              <div key={player.id} className="text-brown-800">
+              <motion.div
+                key={player.id}
+                className="text-brown-800"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
                 {player.name}: {player.health} HP | Mischief: {player.seductionPower}
-              </div>
+              </motion.div>
             ))}
           </div>
         </header>
 
         <div className="grid grid-cols-3 gap-4">
-          <PlayerHand
-            player={players[0]}
-            isCurrentPlayer={currentPlayerId === players[0].id}
-            onCardClick={handleCardClick}
-            onPlayerClick={() => handlePlayerClick(players[0].id)}
-          />
-          <GameBoard players={players} />
-          <PlayerHand
-            player={players[1]}
-            isCurrentPlayer={currentPlayerId === players[1].id}
-            onCardClick={handleCardClick}
-            onPlayerClick={() => handlePlayerClick(players[1].id)}
-          />
+          <AnimatePresence>
+            <motion.div
+              key="player1"
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -50 }}
+              transition={{ duration: 0.5 }}
+            >
+              <PlayerHand
+                player={players[0]}
+                isCurrentPlayer={currentPlayerId === players[0].id}
+                onCardClick={handleCardClick}
+                onPlayerClick={() => handlePlayerClick(players[0].id)}
+              />
+            </motion.div>
+            <motion.div
+              key="gameboard"
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 50 }}
+              transition={{ duration: 0.5 }}
+            >
+              <GameBoard players={players} />
+            </motion.div>
+            <motion.div
+              key="player2"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 50 }}
+              transition={{ duration: 0.5 }}
+            >
+              <PlayerHand
+                player={players[1]}
+                isCurrentPlayer={currentPlayerId === players[1].id}
+                onCardClick={handleCardClick}
+                onPlayerClick={() => handlePlayerClick(players[1].id)}
+              />
+            </motion.div>
+          </AnimatePresence>
         </div>
 
         <div className="mt-8 text-center">
@@ -234,6 +282,8 @@ const Game = () => {
         <div className="mt-4 text-center text-brown-800">
           Turn: {turnCount} | Current Player: {players.find(p => p.id === currentPlayerId).name}
         </div>
+
+        <GameStats stats={gameStats} />
       </div>
 
       <Dialog open={showVictoryDialog} onOpenChange={setShowVictoryDialog}>
