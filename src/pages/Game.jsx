@@ -5,7 +5,6 @@ import { toast } from "sonner"
 import GameBoard from "../components/GameBoard"
 import PlayerHand from "../components/PlayerHand"
 import { initialDeck } from "../data/cards"
-import { run_game_development } from "../ai/game_development"
 
 const Game = () => {
   const [players, setPlayers] = useState([
@@ -26,7 +25,6 @@ const Game = () => {
       field: [],
     }
   ])
-  const [aiResult, setAiResult] = useState(null)
   const [currentPlayerId, setCurrentPlayerId] = useState(1)
   const [gamePhase, setGamePhase] = useState("setup")
   const [selectedCard, setSelectedCard] = useState(null)
@@ -158,35 +156,14 @@ const Game = () => {
           />
         </div>
 
-        <div className="mt-8 text-center space-y-4">
+        <div className="mt-8 text-center">
           <Button onClick={handlePhaseChange} variant="secondary">
             {gamePhase === "end" ? "End Turn" : `Next Phase (${gamePhase})`}
           </Button>
-          <Button onClick={handleAiDevelopment} variant="primary" disabled={aiResult !== null}>
-            {aiResult ? "AI Development Complete" : "Run AI Game Development"}
-          </Button>
-          {aiResult && (
-            <Card className="mt-4">
-              <CardContent className="p-4">
-                <h3 className="text-lg font-semibold mb-2">AI Development Result:</h3>
-                <p className="whitespace-pre-wrap">{aiResult}</p>
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
     </div>
   )
-}
-
-const handleAiDevelopment = async () => {
-  try {
-    const result = await run_game_development()
-    setAiResult(result)
-  } catch (error) {
-    console.error("Error running AI game development:", error)
-    setAiResult("An error occurred while running AI game development.")
-  }
 }
 
 export default Game
