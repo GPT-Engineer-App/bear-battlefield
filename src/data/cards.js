@@ -1,8 +1,10 @@
+import { teddyBears } from './teddyBears';
+
 export const initialDeck = [
-  { name: "Drunken Dave", type: "character", hp: 10, manaCost: 3, ability: "Stumble Strike", effect: "Deals 2 damage to an opponent's character but has a 50% chance to deal 1 damage to itself" },
-  { name: "Rebellious Randy", type: "character", hp: 8, manaCost: 2, ability: "Mischief Maker", effect: "Draw two cards and discard one" },
-  { name: "Troublemaker Tina", type: "character", hp: 12, manaCost: 4, ability: "Sneaky Swipe", effect: "Steal one random card from opponent's hand" },
-  { name: "Pillow Fight", type: "action", manaCost: 2, effect: "Opponent discards two cards, they're too busy dodging pillows to focus" },
+  { name: teddyBears[0].name, type: "character", hp: 10, manaCost: 3, ability: "Seductive Wink", effect: teddyBears[0].description },
+  { name: teddyBears[1].name, type: "character", hp: 8, manaCost: 2, ability: "Lingerie Charm", effect: teddyBears[1].description },
+  { name: teddyBears[2].name, type: "character", hp: 12, manaCost: 4, ability: "Bondage Trap", effect: teddyBears[2].description },
+  { name: "Pillow Talk", type: "action", manaCost: 2, effect: "Opponent discards two cards, they're too distracted by your smooth talking" },
   { name: "Spiked Honey", type: "item", manaCost: 3, effect: "Restore 3 HP and increase mischief. Side effects may include uncontrollable giggles" },
   { name: "Party Hat", type: "item", manaCost: 1, effect: "+2 mischief for 2 turns. Warning: May cause spontaneous dance parties" },
   { name: "Teddy Nightclub", type: "environment", manaCost: 5, effect: "+1 mischief, -1 inhibition per turn. What happens at the club, stays at the club" },
