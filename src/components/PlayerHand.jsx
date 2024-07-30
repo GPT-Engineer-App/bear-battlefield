@@ -2,42 +2,47 @@ import React from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { motion } from "framer-motion"
+import { Heart, Zap } from "lucide-react"
 
 const PlayerHand = ({ player, isCurrentPlayer, onCardClick, onPlayerClick }) => {
   return (
     <div
-      className={`bg-white rounded-lg p-4 ${isCurrentPlayer ? 'border-4 border-yellow-400' : ''}`}
+      className={`bg-white rounded-xl p-6 shadow-lg ${isCurrentPlayer ? 'ring-4 ring-pink-400' : ''}`}
       onClick={onPlayerClick}
     >
-      <div className="flex items-center mb-4">
-        <span className="font-semibold">{player.name}</span>
+      <div className="flex items-center mb-6">
+        <span className="font-bold text-xl text-purple-800">{player.name}'s Hand</span>
       </div>
-      <div className="flex flex-wrap justify-center gap-2">
+      <div className="flex flex-wrap justify-center gap-4">
         {player.hand.map((card, index) => (
           <TooltipProvider key={index}>
             <Tooltip>
               <TooltipTrigger asChild>
                 <motion.div
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.05, rotate: 5 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <Card
-                    className="w-32 h-48 cursor-pointer hover:bg-gray-100 transition-colors relative overflow-hidden"
+                    className="w-36 h-52 cursor-pointer hover:shadow-xl transition-shadow relative overflow-hidden bg-gradient-to-br from-pink-100 to-purple-100"
                     onClick={() => isCurrentPlayer && onCardClick(index)}
                   >
-                    <CardContent className="p-2 text-xs">
-                      <div className="font-bold mb-1 text-center">{card.name}</div>
-                      <div className="text-center mb-1">{card.type}</div>
+                    <CardContent className="p-3 text-xs">
+                      <div className="font-bold mb-2 text-center text-sm">{card.name}</div>
+                      <div className="text-center mb-2 text-purple-600">{card.type}</div>
                       {card.type === 'character' && (
-                        <div className="text-center mb-1">HP: {card.hp}</div>
+                        <div className="flex items-center justify-center mb-2">
+                          <Heart className="w-4 h-4 text-red-500 mr-1" />
+                          <span>{card.hp}</span>
+                        </div>
                       )}
                       {card.ability && (
-                        <div className="text-blue-600 text-center mb-1">{card.ability}</div>
+                        <div className="text-blue-600 text-center mb-2 italic">{card.ability}</div>
                       )}
-                      <div className="absolute top-1 right-1 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
-                        {card.manaCost}
+                      <div className="absolute top-2 right-2 bg-blue-500 text-white rounded-full w-7 h-7 flex items-center justify-center">
+                        <Zap className="w-4 h-4" />
+                        <span className="ml-1">{card.manaCost}</span>
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 bg-gray-200 p-1 text-center">
+                      <div className="absolute bottom-0 left-0 right-0 bg-purple-200 p-2 text-center text-[10px]">
                         {card.effect}
                       </div>
                     </CardContent>

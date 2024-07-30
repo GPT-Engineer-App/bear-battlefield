@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { motion, AnimatePresence } from "framer-motion"
 import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Heart, Droplet, Sparkles } from "lucide-react"
 
 const Game = () => {
   const [players, setPlayers] = useState([
@@ -280,28 +281,28 @@ const Game = () => {
   }, [debugData, error])
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-200 to-yellow-400 p-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-b from-pink-200 to-purple-300 p-4">
+      <div className="max-w-7xl mx-auto">
         {isLoading && <p>Loading debug data...</p>}
         {error && <p>Error: {error.message}</p>}
         <header className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-brown-800">Terrible Teddies: Naughty Bear Brawl</h1>
-          <div className="flex space-x-4">
+          <h1 className="text-4xl font-bold text-purple-800 font-serif">Sultry Seductions: Battle of Desires</h1>
+          <div className="flex space-x-6">
             {players.map(player => (
               <motion.div
                 key={player.id}
-                className="text-brown-800 bg-white rounded-lg p-2 shadow-md"
+                className="text-purple-800 bg-white rounded-xl p-4 shadow-lg"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                <div className="font-bold mb-1">{player.name}</div>
+                <div className="font-bold mb-2 text-lg">{player.name}</div>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="flex items-center space-x-2">
-                        <span>❤️</span>
-                        <Progress value={(player.health / 30) * 100} className="w-24" />
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Heart className="text-red-500" />
+                        <Progress value={(player.health / 30) * 100} className="w-32" />
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -309,12 +310,12 @@ const Game = () => {
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                <div className="flex items-center space-x-2">
-                  <span>🔮</span>
+                <div className="flex items-center space-x-2 mb-2">
+                  <Droplet className="text-blue-500" />
                   <span>{player.mana}/{player.maxMana}</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span>💖</span>
+                  <Sparkles className="text-yellow-500" />
                   <span>{player.seductionPower}</span>
                 </div>
               </motion.div>
@@ -322,7 +323,7 @@ const Game = () => {
           </div>
         </header>
 
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-6">
           <AnimatePresence>
             <motion.div
               key="player1"
@@ -367,13 +368,13 @@ const Game = () => {
           </AnimatePresence>
         </div>
 
-        <div className="mt-8 flex justify-between items-start">
+        <div className="mt-12 flex justify-between items-start">
           <GameStats stats={gameStats} />
           <div className="text-center">
-            <Button onClick={handlePhaseChange} variant="secondary">
+            <Button onClick={handlePhaseChange} variant="secondary" className="text-lg px-6 py-3">
               {gamePhase === "end" ? "End Turn" : `Next Phase (${gamePhase})`}
             </Button>
-            <div className="mt-2 text-brown-800">
+            <div className="mt-4 text-purple-800 font-semibold">
               Turn: {turnCount} | Current Player: {players.find(p => p.id === currentPlayerId).name}
             </div>
           </div>
