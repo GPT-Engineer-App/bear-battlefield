@@ -4,11 +4,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "sonner"
 import { useQuery } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "framer-motion"
-import { Sparkles, Zap, Heart, Droplet, Shield, Clock, ArrowRight, Music, Volume2 } from "lucide-react"
+import { Sparkles, Zap, Heart, Droplet, Shield, Clock, ArrowRight, Music, Volume2, Gift } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Progress } from "@/components/ui/progress"
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import GameBoard from "../components/GameBoard"
 import PlayerHand from "../components/PlayerHand"
 import GameStats from "../components/GameStats"
@@ -33,6 +34,7 @@ const Game = () => {
       seductionPower: 0,
       defense: 0,
       avatar: "/placeholder.svg",
+      effects: [],
     },
     {
       id: 2,
@@ -46,6 +48,7 @@ const Game = () => {
       seductionPower: 0,
       defense: 0,
       avatar: "/placeholder.svg",
+      effects: [],
     }
   ])
   const [soundEnabled, setSoundEnabled] = useState(true)
@@ -65,6 +68,8 @@ const Game = () => {
   const [turnTimer, setTurnTimer] = useState(60)
   const [gameLog, setGameLog] = useState([])
   const logRef = useRef(null)
+  const [showGiftDialog, setShowGiftDialog] = useState(false)
+  const [giftOptions, setGiftOptions] = useState([])
 
   useEffect(() => {
     if (gamePhase === "setup") {
@@ -180,12 +185,25 @@ const Game = () => {
       toast.success(`${currentPlayer.name} played ${card.name}. ${card.effect}`, {
         description: "Things are heating up!",
       })
+      applyCharacterEffect(card, currentPlayer.id)
     } else {
       setSelectedCard(card)
       toast.info("Select a target for the card effect", {
         description: "Choose wisely, lover boy!",
       })
     }
+  }, [players, currentPlayerId, addToGameLog])
+
+  const applyCharacterEffect = useCallback((card, playerId) => {
+    setPlayers(prevPlayers => prevPlayers.map(player => {
+      if (player.id === playerId) {
+        return {
+          ...player,
+          effects: [...player.effects, { name: card.name, duration: 3, effect: card.effect }]
+        }
+      }
+      return player
+    }))
   }, [])
 
   const addToGameLog = useCallback((message) => {
@@ -310,7 +328,7 @@ const Game = () => {
 
     let damage = currentPlayer.seductionPower - opponentPlayer.seductionPower
 
-    // Apply character abilities
+    // Apply character abilities and effects
     currentPlayer.field.forEach(card => {
       switch (card.ability) {
         case "Seductive Wink":
@@ -339,10 +357,30 @@ const Game = () => {
           currentPlayer.health = Math.min(currentPlayer.health + healAmount, 30)
           break
         case "Mimic Master":
-          // Implement copying ability logic here
+          const randomOpponentCard = opponentPlayer.field[Math.floor(Math.random() * opponentPlayer.field.length)]
+          if (randomOpponentCard) {
+            applyCharacterEffect(randomOpponentCard, currentPlayer.id)
+          }
           break
       }
     })
+
+    // Apply ongoing effects
+    currentPlayer.effects = currentPlayer.effects.filter(effect => {
+      switch (effect.name) {
+        case "Party Hat":
+          currentPlayer.seductionPower += 2
+          addToGameLog(`${effect.name} increased ${currentPlayer.name}'s seduction power by 2`)
+          break
+        case "Teddy Nightclub":
+          currentPlayer.seductionPower += 1
+          currentPlayer.mana = Math.max(currentPlayer.mana - 1, 0)
+          addToGameLog(`${effect.name} increased ${currentPlayer.name}'s seduction power by 1 and decreased mana by 1`)
+          break
+        // Add more effect cases here
+      }
+      return effect.duration > 1 ? { ...effect, duration: effect.duration - 1 } : null
+    }).filter(Boolean)
 
     if (damage > 0) {
       const actualDamage = Math.max(damage - opponentPlayer.defense, 0)
@@ -373,6 +411,48 @@ const Game = () => {
       setShowVictoryDialog(true)
       addToGameLog(`${currentPlayer.name} has won the game!`)
     }
+
+    // Chance to trigger gift dialog
+    if (Math.random() < 0.2) {
+      triggerGiftDialog()
+    }
+  }
+
+  const triggerGiftDialog = () => {
+    const giftCards = [
+      { name: "Chocolate Box", effect: "Heal 5 HP" },
+      { name: "Love Letter", effect: "Draw 2 cards" },
+      { name: "Bouquet", effect: "Gain 2 Seduction Power" }
+    ]
+    setGiftOptions(giftCards.sort(() => 0.5 - Math.random()).slice(0, 2))
+    setShowGiftDialog(true)
+  }
+
+  const handleGiftSelection = (gift) => {
+    const currentPlayer = players.find(p => p.id === currentPlayerId)
+    switch (gift.name) {
+      case "Chocolate Box":
+        setPlayers(prevPlayers => prevPlayers.map(player => 
+          player.id === currentPlayerId ? {...player, health: Math.min(player.health + 5, 30)} : player
+        ))
+        addToGameLog(`${currentPlayer.name} received a Chocolate Box and healed 5 HP`)
+        break
+      case "Love Letter":
+        drawCard(currentPlayerId)
+        drawCard(currentPlayerId)
+        addToGameLog(`${currentPlayer.name} received a Love Letter and drew 2 cards`)
+        break
+      case "Bouquet":
+        setPlayers(prevPlayers => prevPlayers.map(player => 
+          player.id === currentPlayerId ? {...player, seductionPower: player.seductionPower + 2} : player
+        ))
+        addToGameLog(`${currentPlayer.name} received a Bouquet and gained 2 Seduction Power`)
+        break
+    }
+    setShowGiftDialog(false)
+    toast.success(`${currentPlayer.name} received a gift: ${gift.name}!`, {
+      description: gift.effect,
+    })
   }
 
   const handleCardClick = (cardIndex) => {
@@ -583,6 +663,28 @@ const Game = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={showGiftDialog} onOpenChange={setShowGiftDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>A Gift Has Appeared!</AlertDialogTitle>
+            <AlertDialogDescription>
+              Choose a gift to receive a special bonus:
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex justify-center space-x-4">
+            {giftOptions.map((gift, index) => (
+              <Button key={index} onClick={() => handleGiftSelection(gift)}>
+                <Gift className="mr-2 h-4 w-4" />
+                {gift.name}
+              </Button>
+            ))}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Decline Gifts</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
