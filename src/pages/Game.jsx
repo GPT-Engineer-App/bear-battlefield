@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import GameBoard from "../components/GameBoard"
 import PlayerHand from "../components/PlayerHand"
 import { initialDeck } from "../data/cards"
+import { run_game_development } from "../ai/game_development"
 
 const Game = () => {
   const [player1, setPlayer1] = useState({
@@ -104,9 +105,12 @@ const Game = () => {
           <PlayerHand player={player2} isCurrentPlayer={currentPlayer === 2} />
         </div>
 
-        <div className="mt-8 text-center">
+        <div className="mt-8 text-center space-y-4">
           <Button onClick={handlePhaseChange} variant="secondary">
             {gamePhase === "end" ? "End Turn" : `Next Phase (${gamePhase})`}
+          </Button>
+          <Button onClick={() => run_game_development()} variant="primary">
+            Run AI Game Development
           </Button>
         </div>
       </div>
