@@ -4,9 +4,11 @@ import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "sonner"
 import { useQuery } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "framer-motion"
-import { Sparkles, Zap, Heart, Droplet, Shield, Clock, ArrowRight } from "lucide-react"
+import { Sparkles, Zap, Heart, Droplet, Shield, Clock, ArrowRight, Music, Volume2 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Progress } from "@/components/ui/progress"
+import { Slider } from "@/components/ui/slider"
+import { Switch } from "@/components/ui/switch"
 import GameBoard from "../components/GameBoard"
 import PlayerHand from "../components/PlayerHand"
 import GameStats from "../components/GameStats"
@@ -30,6 +32,7 @@ const Game = () => {
       field: [],
       seductionPower: 0,
       defense: 0,
+      avatar: "/placeholder.svg",
     },
     {
       id: 2,
@@ -42,8 +45,11 @@ const Game = () => {
       field: [],
       seductionPower: 0,
       defense: 0,
+      avatar: "/placeholder.svg",
     }
   ])
+  const [soundEnabled, setSoundEnabled] = useState(true)
+  const [musicVolume, setMusicVolume] = useState(50)
   const [currentPlayerId, setCurrentPlayerId] = useState(1)
   const [gamePhase, setGamePhase] = useState("setup")
   const [selectedCard, setSelectedCard] = useState(null)
@@ -407,17 +413,19 @@ const Game = () => {
           <h1 className="text-4xl font-bold text-purple-800 font-serif">Sultry Seductions: Battle of Desires</h1>
           <div className="flex space-x-6">
             {players.map(player => (
-              <TooltipProvider>
+              <TooltipProvider key={player.id}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <motion.div
-                      key={player.id}
                       className={`text-purple-800 bg-white rounded-xl p-4 shadow-lg ${currentPlayerId === player.id ? 'ring-4 ring-pink-400' : ''}`}
                       initial={{ opacity: 0, y: -20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5 }}
                     >
-                      <div className="font-bold mb-2 text-lg">{player.name}</div>
+                      <div className="flex items-center mb-2">
+                        <img src={player.avatar} alt={player.name} className="w-10 h-10 rounded-full mr-2" />
+                        <div className="font-bold text-lg">{player.name}</div>
+                      </div>
                       <div className="flex items-center space-x-2 mb-2">
                         <Heart className="text-red-500" />
                         <Progress value={(player.health / 30) * 100} className="w-32" />
@@ -454,6 +462,27 @@ const Game = () => {
             ))}
           </div>
         </header>
+        <div className="flex justify-end mb-4">
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center">
+              <Volume2 className="mr-2" />
+              <Switch
+                checked={soundEnabled}
+                onCheckedChange={setSoundEnabled}
+              />
+            </div>
+            <div className="flex items-center">
+              <Music className="mr-2" />
+              <Slider
+                value={[musicVolume]}
+                onValueChange={(value) => setMusicVolume(value[0])}
+                max={100}
+                step={1}
+                className="w-32"
+              />
+            </div>
+          </div>
+        </div>
         <div className="mb-4 flex justify-center items-center">
           <Badge variant="secondary" className="text-lg px-4 py-2">
             <Clock className="mr-2" />
@@ -539,10 +568,19 @@ const Game = () => {
           <DialogHeader>
             <DialogTitle>Victory!</DialogTitle>
             <DialogDescription>
-              {winner && `${winner.name} has won the Naughty Bear Brawl!`}
+              {winner && (
+                <div className="text-center">
+                  <img src={winner.avatar} alt={winner.name} className="w-24 h-24 rounded-full mx-auto mb-4" />
+                  <p className="text-xl font-bold">{winner.name} has won the Naughty Bear Brawl!</p>
+                  <p className="mt-2">Final Score: {gameStats.cardsPlayed} cards played, {gameStats.damageDealt} damage dealt</p>
+                </div>
+              )}
             </DialogDescription>
           </DialogHeader>
-          <Button onClick={() => window.location.reload()}>Play Again</Button>
+          <div className="flex justify-center space-x-4">
+            <Button onClick={() => window.location.reload()}>Play Again</Button>
+            <Button variant="outline" onClick={() => setShowVictoryDialog(false)}>Close</Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
