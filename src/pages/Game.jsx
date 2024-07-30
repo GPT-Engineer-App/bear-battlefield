@@ -9,6 +9,8 @@ import GameLog from "../components/GameLog"
 import { initialDeck } from "../data/cards"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { motion, AnimatePresence } from "framer-motion"
+import { Progress } from "@/components/ui/progress"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 const Game = () => {
   const [players, setPlayers] = useState([
@@ -17,6 +19,7 @@ const Game = () => {
       name: "Player 1",
       health: 30,
       mana: 1,
+      maxMana: 1,
       deck: [...initialDeck],
       hand: [],
       field: [],
@@ -27,6 +30,7 @@ const Game = () => {
       name: "Player 2",
       health: 30,
       mana: 1,
+      maxMana: 1,
       deck: [...initialDeck],
       hand: [],
       field: [],
@@ -170,6 +174,11 @@ const Game = () => {
     setCurrentPlayerId(currentPlayerId === 1 ? 2 : 1)
     setGamePhase("draw")
     setTurnCount(prevCount => prevCount + 1)
+    setPlayers(prevPlayers => prevPlayers.map(player => ({
+      ...player,
+      maxMana: Math.min(player.maxMana + 1, 10),
+      mana: Math.min(player.maxMana + 1, 10)
+    })))
   }
 
   const handlePhaseChange = () => {
@@ -243,12 +252,33 @@ const Game = () => {
             {players.map(player => (
               <motion.div
                 key={player.id}
-                className="text-brown-800"
+                className="text-brown-800 bg-white rounded-lg p-2 shadow-md"
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
               >
-                {player.name}: {player.health} HP | Mischief: {player.seductionPower} | Mana: {player.mana}
+                <div className="font-bold mb-1">{player.name}</div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center space-x-2">
+                        <span>❤️</span>
+                        <Progress value={(player.health / 30) * 100} className="w-24" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Health: {player.health}/30</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <div className="flex items-center space-x-2">
+                  <span>🔮</span>
+                  <span>{player.mana}/{player.maxMana}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span>💖</span>
+                  <span>{player.seductionPower}</span>
+                </div>
               </motion.div>
             ))}
           </div>

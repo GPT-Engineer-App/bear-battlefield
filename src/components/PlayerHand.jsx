@@ -1,6 +1,7 @@
 import React from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { motion } from "framer-motion"
 
 const PlayerHand = ({ player, isCurrentPlayer, onCardClick, onPlayerClick }) => {
   return (
@@ -11,29 +12,37 @@ const PlayerHand = ({ player, isCurrentPlayer, onCardClick, onPlayerClick }) => 
       <div className="flex items-center mb-4">
         <span className="font-semibold">{player.name}</span>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="flex flex-wrap justify-center gap-2">
         {player.hand.map((card, index) => (
           <TooltipProvider key={index}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Card
-                  className="h-40 cursor-pointer hover:bg-gray-100 transition-colors relative"
-                  onClick={() => isCurrentPlayer && onCardClick(index)}
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <CardContent className="p-2 text-xs">
-                    <div className="font-bold mb-1">{card.name}</div>
-                    <div>Type: {card.type}</div>
-                    {card.type === 'character' && (
-                      <div>HP: {card.hp}</div>
-                    )}
-                    {card.ability && (
-                      <div className="text-blue-600">Ability: {card.ability}</div>
-                    )}
-                    <div className="absolute top-1 right-1 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
-                      {card.manaCost}
-                    </div>
-                  </CardContent>
-                </Card>
+                  <Card
+                    className="w-32 h-48 cursor-pointer hover:bg-gray-100 transition-colors relative overflow-hidden"
+                    onClick={() => isCurrentPlayer && onCardClick(index)}
+                  >
+                    <CardContent className="p-2 text-xs">
+                      <div className="font-bold mb-1 text-center">{card.name}</div>
+                      <div className="text-center mb-1">{card.type}</div>
+                      {card.type === 'character' && (
+                        <div className="text-center mb-1">HP: {card.hp}</div>
+                      )}
+                      {card.ability && (
+                        <div className="text-blue-600 text-center mb-1">{card.ability}</div>
+                      )}
+                      <div className="absolute top-1 right-1 bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                        {card.manaCost}
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 bg-gray-200 p-1 text-center">
+                        {card.effect}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               </TooltipTrigger>
               <TooltipContent>
                 <p>{card.effect}</p>
