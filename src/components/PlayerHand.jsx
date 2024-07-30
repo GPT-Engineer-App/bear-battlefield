@@ -5,6 +5,9 @@ import { motion } from "framer-motion"
 import { Heart, Zap } from "lucide-react"
 
 const PlayerHand = ({ player, isCurrentPlayer, onCardClick, onPlayerClick }) => {
+  const canPlayCard = (card) => {
+    return isCurrentPlayer && player.mana >= card.manaCost;
+  };
   return (
     <div
       className={`bg-white rounded-xl p-6 shadow-lg ${isCurrentPlayer ? 'ring-4 ring-pink-400' : ''}`}
@@ -23,8 +26,10 @@ const PlayerHand = ({ player, isCurrentPlayer, onCardClick, onPlayerClick }) => 
                   whileTap={{ scale: 0.95 }}
                 >
                   <Card
-                    className="w-36 h-52 cursor-pointer hover:shadow-xl transition-shadow relative overflow-hidden bg-gradient-to-br from-pink-100 to-purple-100"
-                    onClick={() => isCurrentPlayer && onCardClick(index)}
+                    className={`w-36 h-52 cursor-pointer hover:shadow-xl transition-shadow relative overflow-hidden bg-gradient-to-br from-pink-100 to-purple-100 ${
+                      !canPlayCard(card) ? 'opacity-50' : ''
+                    }`}
+                    onClick={() => canPlayCard(card) && onCardClick(index)}
                   >
                     <CardContent className="p-3 text-xs">
                       <div className="font-bold mb-2 text-center text-sm">{card.name}</div>

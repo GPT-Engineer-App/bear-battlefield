@@ -4,7 +4,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { toast } from "sonner"
 import { useQuery } from "@tanstack/react-query"
 import { motion, AnimatePresence } from "framer-motion"
-import { Sparkles, Zap, Heart, Droplet } from "lucide-react"
+import { Sparkles, Zap, Heart, Droplet, Shield, Clock } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import GameBoard from "../components/GameBoard"
 import PlayerHand from "../components/PlayerHand"
 import GameStats from "../components/GameStats"
@@ -29,6 +30,7 @@ const Game = () => {
       hand: [],
       field: [],
       seductionPower: 0,
+      defense: 0,
     },
     {
       id: 2,
@@ -52,7 +54,9 @@ const Game = () => {
     cardsPlayed: 0,
     damageDealt: 0,
     healingDone: 0,
+    seductionPowerGained: 0,
   })
+  const [turnTimer, setTurnTimer] = useState(60)
   const [gameLog, setGameLog] = useState([])
   const logRef = useRef(null)
 
@@ -60,6 +64,23 @@ const Game = () => {
     if (gamePhase === "setup") {
       setupGame()
     }
+  }, [gamePhase])
+
+  useEffect(() => {
+    let timer
+    if (gamePhase === "play") {
+      timer = setInterval(() => {
+        setTurnTimer((prevTimer) => {
+          if (prevTimer <= 0) {
+            clearInterval(timer)
+            handlePhaseChange()
+            return 60
+          }
+          return prevTimer - 1
+        })
+      }, 1000)
+    }
+    return () => clearInterval(timer)
   }, [gamePhase])
 
   const setupGame = useCallback(() => {
@@ -287,13 +308,16 @@ const Game = () => {
     currentPlayer.field.forEach(card => {
       switch (card.ability) {
         case "Seductive Wink":
-          damage += 1
+          damage += 2
+          addToGameLog(`${card.name} increased damage by 2`)
           break
         case "Lingerie Charm":
-          opponentPlayer.seductionPower = Math.max(opponentPlayer.seductionPower - 1, 0)
+          opponentPlayer.seductionPower = Math.max(opponentPlayer.seductionPower - 2, 0)
+          addToGameLog(`${card.name} reduced opponent's seduction power by 2`)
           break
         case "Bondage Trap":
-          opponentPlayer.mana = Math.max(opponentPlayer.mana - 1, 0)
+          opponentPlayer.mana = Math.max(opponentPlayer.mana - 2, 0)
+          addToGameLog(`${card.name} reduced opponent's mana by 2`)
           break
         case "Tickle Attack":
           if (opponentPlayer.hand.length > 0) {
@@ -315,23 +339,27 @@ const Game = () => {
     })
 
     if (damage > 0) {
+      const actualDamage = Math.max(damage - opponentPlayer.defense, 0)
       setPlayers(prevPlayers => prevPlayers.map(player => 
-        player.id !== currentPlayerId ? {...player, health: Math.max(player.health - damage, 0)} : player
+        player.id !== currentPlayerId ? {...player, health: Math.max(player.health - actualDamage, 0), defense: 0} : player
       ))
       setGameStats(prevStats => ({
         ...prevStats,
-        damageDealt: prevStats.damageDealt + damage
+        damageDealt: prevStats.damageDealt + actualDamage
       }))
-      toast.success(`${currentPlayer.name} dealt ${damage} damage to ${opponentPlayer.name}!`, {
-        description: "That teddy's gonna need some stitches!",
+      toast.success(`${currentPlayer.name} dealt ${actualDamage} damage to ${opponentPlayer.name}!`, {
+        description: `${opponentPlayer.defense > 0 ? `${opponentPlayer.name}'s defense absorbed ${damage - actualDamage} damage!` : "That teddy's gonna need some stitches!"}`,
       })
-      addToGameLog(`${currentPlayer.name} dealt ${damage} damage to ${opponentPlayer.name}`)
+      addToGameLog(`${currentPlayer.name} dealt ${actualDamage} damage to ${opponentPlayer.name}`)
     } else {
       toast.info("No damage dealt this turn. Better luck next time!", {
         description: "Even teddy bears have off days.",
       })
       addToGameLog("No damage dealt this turn")
     }
+
+    // Reset defense at the end of the turn
+    setPlayers(prevPlayers => prevPlayers.map(player => ({...player, defense: 0})))
 
     // Check for game over condition
     if (opponentPlayer.health <= 0) {
@@ -377,49 +405,57 @@ const Game = () => {
           <h1 className="text-4xl font-bold text-purple-800 font-serif">Sultry Seductions: Battle of Desires</h1>
           <div className="flex space-x-6">
             {players.map(player => (
-              <motion.div
-                key={player.id}
-                className={`text-purple-800 bg-white rounded-xl p-4 shadow-lg ${currentPlayerId === player.id ? 'ring-4 ring-pink-400' : ''}`}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <div className="font-bold mb-2 text-lg">{player.name}</div>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <motion.div
+                      key={player.id}
+                      className={`text-purple-800 bg-white rounded-xl p-4 shadow-lg ${currentPlayerId === player.id ? 'ring-4 ring-pink-400' : ''}`}
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <div className="font-bold mb-2 text-lg">{player.name}</div>
                       <div className="flex items-center space-x-2 mb-2">
                         <Heart className="text-red-500" />
                         <Progress value={(player.health / 30) * 100} className="w-32" />
                         <span className="text-sm font-bold">{player.health}/30</span>
                       </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Health: {player.health}/30</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <div className="flex items-center space-x-2 mb-2">
-                  <Droplet className="text-blue-500" />
-                  <Progress value={(player.mana / player.maxMana) * 100} className="w-32" />
-                  <span className="text-sm font-bold">{player.mana}/{player.maxMana}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Sparkles className="text-yellow-500" />
-                  <span className="text-sm font-bold">{player.seductionPower}</span>
-                </div>
-                <div className="flex items-center space-x-2 mt-2">
-                  <Zap className="text-purple-500" />
-                  <span className="text-sm font-bold">{player.deck.length}</span>
-                </div>
-              </motion.div>
+                      <div className="flex items-center space-x-2 mb-2">
+                        <Droplet className="text-blue-500" />
+                        <Progress value={(player.mana / player.maxMana) * 100} className="w-32" />
+                        <span className="text-sm font-bold">{player.mana}/{player.maxMana}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Sparkles className="text-yellow-500" />
+                        <span className="text-sm font-bold">{player.seductionPower}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 mt-2">
+                        <Zap className="text-purple-500" />
+                        <span className="text-sm font-bold">{player.deck.length}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 mt-2">
+                        <Shield className="text-green-500" />
+                        <span className="text-sm font-bold">{player.defense}</span>
+                      </div>
+                    </motion.div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Health: {player.health}/30</p>
+                    <p>Mana: {player.mana}/{player.maxMana}</p>
+                    <p>Seduction Power: {player.seductionPower}</p>
+                    <p>Cards in Deck: {player.deck.length}</p>
+                    <p>Defense: {player.defense}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             ))}
           </div>
         </header>
         <div className="mb-4 flex justify-center items-center">
           <Badge variant="secondary" className="text-lg px-4 py-2">
             <Clock className="mr-2" />
-            Turn: {turnCount} | Current Player: {players.find(p => p.id === currentPlayerId).name} | Phase: {gamePhase}
+            Turn: {turnCount} | Current Player: {players.find(p => p.id === currentPlayerId).name} | Phase: {gamePhase} | Time Left: {turnTimer}s
           </Badge>
         </div>
 
