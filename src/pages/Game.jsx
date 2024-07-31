@@ -16,7 +16,6 @@ import GameStats from "../components/GameStats"
 import GameLog from "../components/GameLog"
 import { initialDeck } from "../data/cards"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { run_game_development } from "../ai/game_development"
 
